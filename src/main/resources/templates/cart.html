@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/ecommerce}">My Shop</a>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-light position-relative" th:href="@{/ecommerce/cart}">
+                <i class="bi bi-cart3"></i> Cart
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" th:text="${cart_count}">
+                    0
+                    <span class="visually-hidden">items in cart</span>
+                </span>
+            </a>
+            <div class="dropdown" th:if="${loggedIn}">
+                <a class="btn btn-outline-light dropdown-toggle" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li><a class="dropdown-item" th:href="@{/ecommerce/profile}">View Profile</a></li>
+                    <li><a class="dropdown-item" th:href="@{/ecommerce/orders}">My Orders</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" th:href="@{/ecommerce/logout}">Logout</a></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+<div class="container my-5">
+    <h1 class="mb-4">Shopping Cart</h1>
+
+    <div th:if="${#lists.isEmpty(cart)}">
+        <p>Your cart is empty.</p>
+        <a class="btn btn-primary" th:href="@{/ecommerce}">Continue Shopping</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(cart)}">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Product</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${cart}">
+                <td>
+                    <img th:src="${item.getProduct().getImageUrl()}" alt="Product Image"
+                         style="width: 60px; height: 60px; object-fit: cover;">
+                </td>
+                <td th:text="${item.getProduct().getPname()}">Product Name</td>
+                <td th:text="${item.getProduct().getDescription()}">Description</td>
+
+                <td>
+                    <div class="d-flex align-items-center">
+                        <form th:action="@{/ecommerce/cart/decrement}" method="post" class="me-1">
+                            <input type="hidden" name="id" th:value="${item.getCartItemId()}" />
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
+                        </form>
+
+                        <span class="mx-2" th:text="${item.getQuantity()}">1</span>
+
+                        <form th:action="@{/ecommerce/cart/increment}" method="post" class="ms-1">
+                            <input type="hidden" name="id" th:value="${item.getCartItemId()}" />
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                        </form>
+                    </div>
+                </td>
+
+                <td>
+                    $<span th:text="${item.getProduct().getPrice() * item.getQuantity()}">0.00</span>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <a class="btn btn-success" th:href="@{/ecommerce/checkout}">Checkout</a>
+        <a class="btn btn-secondary" th:href="@{/ecommerce}">Continue Shopping</a>
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-3">
+    &copy; 2025 My Shop. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
