@@ -47,7 +47,6 @@ public class MyCommerceController {
         }
     }
 
-
     @GetMapping("/login")
     public String logIn(Model model, HttpSession session) {
         model.addAttribute("user", new User());
