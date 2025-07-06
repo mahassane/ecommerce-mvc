@@ -6,6 +6,22 @@
     <title>My Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+
+
 </head>
 <body>
 
@@ -36,7 +52,7 @@
     </div>
 </nav>
 
-<div class="container my-5">
+<main class="container my-5">
     <h1 class="mb-4">Shopping Cart</h1>
 
     <div th:if="${#lists.isEmpty(cart)}">
@@ -91,10 +107,10 @@
         <a class="btn btn-success" th:href="@{/ecommerce/checkout}">Checkout</a>
         <a class="btn btn-secondary" th:href="@{/ecommerce}">Continue Shopping</a>
     </div>
-</div>
+</main>
 
 <footer class="bg-dark text-white text-center py-3">
-    &copy; 2025 My Shop. All rights reserved.
+    &copy; 2025 E-Shop
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
