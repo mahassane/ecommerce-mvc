@@ -40,12 +40,6 @@ public class ProductDAOImpl implements ProductDAO {
 
     @Override
     @Transactional
-    public void updateProduct(Product product) {
-        entityManager.merge(product);
-    }
-
-    @Override
-    @Transactional
     public void save(Product product) {
         entityManager.persist(product);
     }

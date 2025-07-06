@@ -1,11 +1,11 @@
 package com.ecommerce.mvc.controller;
 
-import com.ecommerce.mvc.dao.cartItem.CartItemDAO;
-import com.ecommerce.mvc.dao.order.OrderDAO;
-import com.ecommerce.mvc.dao.orderItem.OrderItemDAO;
-import com.ecommerce.mvc.dao.product.ProductDAO;
-import com.ecommerce.mvc.dao.user.UserDAO;
 import com.ecommerce.mvc.entity.*;
+import com.ecommerce.mvc.service.cartItem.CartItemService;
+import com.ecommerce.mvc.service.order.OrderService;
+import com.ecommerce.mvc.service.orderItem.OrderItemService;
+import com.ecommerce.mvc.service.product.ProductService;
+import com.ecommerce.mvc.service.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,20 +22,20 @@ import java.util.UUID;
 @RequestMapping("/ecommerce")
 public class MyCommerceController {
 
-    private UserDAO userDAO;
-    private ProductDAO productDAO;
-    private CartItemDAO cartItemDAO;
-    private OrderDAO orderDAO;
-    private OrderItemDAO orderItemDAO;
+    private UserService userService;
+    private ProductService  productService;
+    private CartItemService cartItemService;
+    private OrderService orderService;
+    private OrderItemService orderItemService;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public MyCommerceController(UserDAO userDAO,  ProductDAO productDAO, CartItemDAO cartItemDAO, OrderDAO orderDAO, OrderItemDAO orderItemDAO, PasswordEncoder passwordEncoder) {
-        this.userDAO = userDAO;
-        this.productDAO = productDAO;
-        this.cartItemDAO = cartItemDAO;
-        this.orderDAO = orderDAO;
-        this.orderItemDAO = orderItemDAO;
+    public MyCommerceController(UserService userService,  ProductService productService, CartItemService cartItemService, OrderService orderService, OrderItemService orderItemService, PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.productService = productService;
+        this.cartItemService = cartItemService;
+        this.orderService = orderService;
+        this.orderItemService = orderItemService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -55,25 +55,25 @@ public class MyCommerceController {
 
     @PostMapping("/login")
     public String processLogin(@ModelAttribute("user") User user, HttpSession session, RedirectAttributes redirectAttributes) {
-        User theUser = userDAO.getUserByEmail(user.getEmail());
+        User theUser = userService.getUserByEmail(user.getEmail());
         if (theUser != null && passwordEncoder.matches(user.getPassword(), theUser.getPassword())) {
             session.setAttribute("loggedUser", theUser);
 
             // Check if user cart in DB is empty
-            List<CartItem> userCart = cartItemDAO.getCartItems(theUser);
+            List<CartItem> userCart = cartItemService.getCartItems(theUser);
             if (userCart == null || userCart.isEmpty()) {
                 // Migrate session cart to user cart
                 List<CartItem> sessionCart = (List<CartItem>) session.getAttribute("cart");
                 if (sessionCart != null && !sessionCart.isEmpty()) {
                     for (CartItem item : sessionCart) {
-                        Product managedProduct = productDAO.getProductById(item.getProduct().getPid());
+                        Product managedProduct = productService.getProductById(item.getProduct().getPid());
 
                         // Create a new CartItem linked to the user
                         CartItem newItem = new CartItem();
                         newItem.setUser(theUser);
                         newItem.setProduct(managedProduct);
                         newItem.setQuantity(item.getQuantity());
-                        cartItemDAO.save(newItem);
+                        cartItemService.save(newItem);
                     }
                     // Clear session cart after migration
                     session.setAttribute("cart", new ArrayList<CartItem>());
@@ -94,17 +94,17 @@ public class MyCommerceController {
 
     @GetMapping("/admin")
     public String admin(Model model, HttpSession session) {
-        List<Product> products = productDAO.getAllProducts();
+        List<Product> products = productService.getAllProducts();
         model.addAttribute("products", products);
 
         if (!model.containsAttribute("newProduct")) {
             model.addAttribute("newProduct", new Product());
         }
 
-        List<User> users = userDAO.getAllUsers();
+        List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
 
-        List<Order> orders = orderDAO.getOrders();
+        List<Order> orders = orderService.getOrders();
         model.addAttribute("orders", orders);
 
         User loggedUser = (User) session.getAttribute("loggedUser");
@@ -117,27 +117,27 @@ public class MyCommerceController {
     @PostMapping("/admin/removeUser")
     public String removeUser(@RequestParam("id") String id, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        User userToRemove = userDAO.getUserById(id);
+        User userToRemove = userService.getUserById(id);
         if (loggedUser != null && "admin".equals(loggedUser.getRole())) {
             if (userToRemove != null) {
                 // Referential integrity order
                 // Delete cart items
-                List<CartItem> cartItems = cartItemDAO.getCartItems(userToRemove);
+                List<CartItem> cartItems = cartItemService.getCartItems(userToRemove);
                 if (cartItems != null && !cartItems.isEmpty()) {
-                    cartItemDAO.deleteUserCartItems(userToRemove.getUserId());
+                    cartItemService.deleteUserCartItems(userToRemove.getUserId());
                 }
 
                 // Delete order items
-                List<Order> orders =  orderDAO.getUserOrders(userToRemove.getUserId());
+                List<Order> orders =  orderService.getUserOrders(userToRemove.getUserId());
                 for  (Order order : orders) {
-                    orderItemDAO.deleteOrderItems(order.getOrderId());
+                    orderItemService.deleteOrderItems(order.getOrderId());
                 }
 
                 // Delete orders
-                orderDAO.deleteUserOrders(userToRemove.getUserId());
+                orderService.deleteUserOrders(userToRemove.getUserId());
 
                 // Delete user
-                userDAO.deleteUserById(id);
+                userService.deleteUserById(id);
             }
             return "redirect:/ecommerce/admin#users";
         } else return "redirect:/ecommerce/login";
@@ -147,7 +147,7 @@ public class MyCommerceController {
     public String addProduct(@ModelAttribute("newProduct") Product product, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && "admin".equals(loggedUser.getRole())) {
-            productDAO.save(product);
+            productService.save(product);
             return "redirect:/ecommerce/admin#products";
         } else return "redirect:/ecommerce/login";
     }
@@ -156,9 +156,9 @@ public class MyCommerceController {
     public String removeProduct(@RequestParam("id") String id, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && "admin".equals(loggedUser.getRole())) {
-            if (productDAO.getProductById(id) != null) {
-                orderItemDAO.deleteOrderItemsByProduct(id);
-                productDAO.deleteProduct(id);
+            if (productService.getProductById(id) != null) {
+                orderItemService.deleteOrderItemsByProduct(id);
+                productService.deleteProduct(id);
             }
             return "redirect:/ecommerce/admin#products";
         } else return "redirect:/ecommerce/login";
@@ -171,7 +171,7 @@ public class MyCommerceController {
         int cart_count = 0;
         if (loggedUser != null) {
             model.addAttribute("loggedIn", true);
-            cart = cartItemDAO.getCartItems(loggedUser);
+            cart = cartItemService.getCartItems(loggedUser);
             if (cart != null) cart_count = cart_count = cart.stream().mapToInt(CartItem::getQuantity).sum();
         } else {
             cart = (List<CartItem>) session.getAttribute("cart");
@@ -185,17 +185,17 @@ public class MyCommerceController {
     @PostMapping("/cart/add")
     public String addCartItem(@RequestParam String id, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        Product selectedProduct = productDAO.getProductById(id);
+        Product selectedProduct = productService.getProductById(id);
 
-        Product product = productDAO.getProductById(selectedProduct.getPid());
-        if (productDAO.getProductById(id) != null) {
+        Product product = productService.getProductById(selectedProduct.getPid());
+        if (productService.getProductById(id) != null) {
             if (loggedUser != null) {
-                User user = userDAO.getUserById(loggedUser.getUserId());
-                CartItem existingCartItem = cartItemDAO.getUserCartItem(user.getUserId(), id);
+                User user = userService.getUserById(loggedUser.getUserId());
+                CartItem existingCartItem = cartItemService.getUserCartItem(user.getUserId(), id);
                 if (existingCartItem != null) {
                     existingCartItem.setQuantity(existingCartItem.getQuantity() + 1);
-                    cartItemDAO.save(existingCartItem);
-                } else cartItemDAO.save(new CartItem(user, product, 1));
+                    cartItemService.save(existingCartItem);
+                } else cartItemService.save(new CartItem(user, product, 1));
             } else {
                 ArrayList<CartItem> cart = (ArrayList<CartItem>) session.getAttribute("cart");
                 for (CartItem cartItem : cart) {
@@ -218,7 +218,7 @@ public class MyCommerceController {
         List<CartItem> cart;
         float total = 0.0F;
         if (loggedUser != null) {
-            cart = cartItemDAO.getCartItems(loggedUser);
+            cart = cartItemService.getCartItems(loggedUser);
             total  = (float) cart.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
             model.addAttribute("cart", cart);
             model.addAttribute("total", total);
@@ -236,9 +236,9 @@ public class MyCommerceController {
 
 
         if (loggedUser != null) {
-            CartItem cartItem = cartItemDAO.getCartItem(id);
+            CartItem cartItem = cartItemService.getCartItem(id);
             cartItem.setQuantity(cartItem.getQuantity() + 1);
-            cartItemDAO.save(cartItem);
+            cartItemService.save(cartItem);
         } else {
             ArrayList<CartItem> cart = (ArrayList<CartItem>) session.getAttribute("cart");
             if (cart != null) {
@@ -260,12 +260,12 @@ public class MyCommerceController {
 
 
         if (loggedUser != null) {
-            CartItem cartItem = cartItemDAO.getCartItem(id);
+            CartItem cartItem = cartItemService.getCartItem(id);
             int newQty =  cartItem.getQuantity() - 1;
             if (newQty > 0) {
                 cartItem.setQuantity(cartItem.getQuantity() - 1);
-                cartItemDAO.save(cartItem);
-            } else cartItemDAO.deleteCartItem(cartItem.getProduct());
+                cartItemService.save(cartItem);
+            } else cartItemService.deleteCartItem(cartItem.getProduct());
         } else {
             ArrayList<CartItem> cart = (ArrayList<CartItem>) session.getAttribute("cart");
             if (cart != null) {
@@ -288,7 +288,7 @@ public class MyCommerceController {
         int cart_count = 0;
         if (loggedUser != null && "Customer".equals(loggedUser.getRole())) {
             model.addAttribute("loggedIn", true);
-            List<CartItem> cart = cartItemDAO.getCartItems(loggedUser);
+            List<CartItem> cart = cartItemService.getCartItems(loggedUser);
             if (cart != null) {
                 cart_count = cart.stream().mapToInt(CartItem::getQuantity).sum();
             } else {
@@ -301,7 +301,7 @@ public class MyCommerceController {
             if (cart != null) cart_count = cart.stream().mapToInt(CartItem::getQuantity).sum();
         }
 
-        List<Product> products = productDAO.getAllProducts();
+        List<Product> products = productService.getAllProducts();
         model.addAttribute("products", products);
         model.addAttribute("cart_count", cart_count);
         return "landing-page";
@@ -310,18 +310,18 @@ public class MyCommerceController {
     @PostMapping("/order")
     public String order(@ModelAttribute Order order, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        User user = userDAO.getUserById(loggedUser.getUserId());
-        List<CartItem> cart = cartItemDAO.getCartItems(user);
+        User user = userService.getUserById(loggedUser.getUserId());
+        List<CartItem> cart = cartItemService.getCartItems(user);
         int qty = cart.stream().mapToInt(CartItem::getQuantity).sum();
         float total  = (float) cart.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
         if (qty > 0) {
             Order newOrder = new Order(user, qty, total, order.getFullName(), order.getEmail(), order.getAddress(), order.getPaymentMethod());
-            orderDAO.save(newOrder);
+            orderService.save(newOrder);
             for (CartItem cartItem : cart) {
                 OrderItem orderItem = new OrderItem(newOrder, cartItem.getProduct(), cartItem.getQuantity());
-                orderItemDAO.save(orderItem);
+                orderItemService.save(orderItem);
             }
-            cartItemDAO.clearCart(user);
+            cartItemService.clearCart(user);
             return "post-order";
         } else return "redirect:/ecommerce/cart";
     }
@@ -329,24 +329,24 @@ public class MyCommerceController {
     @GetMapping("/orders")
     public String orders(HttpSession session, Model model) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        User user = userDAO.getUserById(loggedUser.getUserId());
-        model.addAttribute("orders", (List<Order>)orderDAO.getUserOrders(user.getUserId()));
+        User user = userService.getUserById(loggedUser.getUserId());
+        model.addAttribute("orders", (List<Order>)orderService.getUserOrders(user.getUserId()));
         return "orders";
     }
 
     @PostMapping("/orders/cancel")
     public String cancel(@RequestParam String id, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        Order orderToCancel = orderDAO.getOrderById(id);
-        List<OrderItem> orderItems = orderItemDAO.getOrderItems(id);
+        Order orderToCancel = orderService.getOrderById(id);
+        List<OrderItem> orderItems = orderItemService.getOrderItems(id);
 
         if (orderToCancel == null || orderItems.isEmpty()) { return "redirect:/ecommerce/orders"; }
 
         // Clear order items
-        orderItemDAO.deleteOrderItems(orderToCancel.getOrderId());
+        orderItemService.deleteOrderItems(orderToCancel.getOrderId());
 
         // Cancel order
-        orderDAO.deleteOrderById(orderToCancel.getOrderId());
+        orderService.deleteOrderById(orderToCancel.getOrderId());
         return "redirect:/ecommerce/orders";
     }
 
@@ -366,7 +366,7 @@ public class MyCommerceController {
             return "redirect:/ecommerce/login";
         }
 
-        User existing = userDAO.getUserByEmail(email);
+        User existing = userService.getUserByEmail(email);
         if (existing != null && !existing.getUserId().equals(loggedUser.getUserId())) {
             model.addAttribute("user", loggedUser);
             model.addAttribute("emailError", "This email is already in use.");
@@ -381,7 +381,7 @@ public class MyCommerceController {
             loggedUser.setPassword(passwordEncoder.encode(password));
         }
 
-         userDAO.updateUser(loggedUser);
+         userService.updateUser(loggedUser);
 
         session.setAttribute("loggedUser", loggedUser);
 
@@ -405,9 +405,9 @@ public class MyCommerceController {
         String emailPattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
         if (!user.getEmail().equals("admin") && user.getEmail().matches(emailPattern)) {
-            if (userDAO.getUserByEmail(user.getEmail()) == null) {
+            if (userService.getUserByEmail(user.getEmail()) == null) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
-                userDAO.save(user);
+                userService.save(user);
                 return "redirect:/ecommerce/login";
             } else {
                 redirectAttributes.addFlashAttribute("inValidEmail", "Email address already in use.");
