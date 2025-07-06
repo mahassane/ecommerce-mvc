@@ -25,7 +25,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/ecommerce}">My Shop</a>
+        <a class="navbar-brand" th:href="@{/}">My Shop</a>
     </div>
 </nav>
 
@@ -36,7 +36,7 @@
         <!-- Billing Info -->
         <div class="col-md-6">
             <h4>Billing Information</h4>
-            <form th:action="@{/ecommerce/order}" th:object="${order}" method="post">
+            <form th:action="@{/order}" th:object="${order}" method="post">
                 <div class="mb-3">
                     <label class="form-label">Full Name</label>
                     <input type="text" class="form-control" name="fullName" th:value="${order.fullName}" required>
@@ -59,7 +59,7 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-success">Place Order</button>
-                <a class="btn btn-secondary" th:href="@{/ecommerce/cart}">Back to Cart</a>
+                <a class="btn btn-secondary" th:href="@{/cart}">Back to Cart</a>
             </form>
         </div>
 

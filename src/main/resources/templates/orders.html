@@ -31,7 +31,7 @@
                 <td th:text="Confirmed"></td>
                 <td>$<span th:text="${order.getGrandTotal()}">0.00</span></td>
                 <td>
-                    <form th:action="@{/ecommerce/orders/cancel(id=${order.getOrderId()})}" method="POST" class="d-inline">
+                    <form th:action="@{/orders/cancel(id=${order.getOrderId()})}" method="POST" class="d-inline">
                         <input type="hidden" name="_method" value="delete" />
                         <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
                     </form>
@@ -43,7 +43,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a th:href="@{/ecommerce}" class="btn btn-primary">Continue Shopping</a>
+        <a th:href="@{/}" class="btn btn-primary">Continue Shopping</a>
     </div>
 </div>
 

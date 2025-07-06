@@ -27,9 +27,9 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/ecommerce}">My Shop</a>
+        <a class="navbar-brand" th:href="@{/}">My Shop</a>
         <div class="d-flex align-items-center gap-2">
-            <a class="btn btn-outline-light position-relative" th:href="@{/ecommerce/cart}">
+            <a class="btn btn-outline-light position-relative" th:href="@{/cart}">
                 <i class="bi bi-cart3"></i> Cart
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" th:text="${cart_count}">
                     0
@@ -41,10 +41,10 @@
                     <i class="bi bi-person-circle"></i> Profile
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li><a class="dropdown-item" th:href="@{/ecommerce/profile}">View Profile</a></li>
-                    <li><a class="dropdown-item" th:href="@{/ecommerce/orders}">My Orders</a></li>
+                    <li><a class="dropdown-item" th:href="@{/profile}">View Profile</a></li>
+                    <li><a class="dropdown-item" th:href="@{/orders}">My Orders</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" th:href="@{/ecommerce/logout}">Logout</a></li>
+                    <li><a class="dropdown-item" th:href="@{/logout}">Logout</a></li>
                 </ul>
             </div>
 
@@ -57,7 +57,7 @@
 
     <div th:if="${#lists.isEmpty(cart)}">
         <p>Your cart is empty.</p>
-        <a class="btn btn-primary" th:href="@{/ecommerce}">Continue Shopping</a>
+        <a class="btn btn-primary" th:href="@{/}">Continue Shopping</a>
     </div>
 
     <div th:if="${!#lists.isEmpty(cart)}">
@@ -82,14 +82,14 @@
 
                 <td>
                     <div class="d-flex align-items-center">
-                        <form th:action="@{/ecommerce/cart/decrement}" method="post" class="me-1">
+                        <form th:action="@{/cart/decrement}" method="post" class="me-1">
                             <input type="hidden" name="id" th:value="${item.getCartItemId()}" />
                             <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
                         </form>
 
                         <span class="mx-2" th:text="${item.getQuantity()}">1</span>
 
-                        <form th:action="@{/ecommerce/cart/increment}" method="post" class="ms-1">
+                        <form th:action="@{/cart/increment}" method="post" class="ms-1">
                             <input type="hidden" name="id" th:value="${item.getCartItemId()}" />
                             <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
                         </form>
@@ -104,8 +104,8 @@
             </tbody>
         </table>
 
-        <a class="btn btn-success" th:href="@{/ecommerce/checkout}">Checkout</a>
-        <a class="btn btn-secondary" th:href="@{/ecommerce}">Continue Shopping</a>
+        <a class="btn btn-success" th:href="@{/heckout}">Checkout</a>
+        <a class="btn btn-secondary" th:href="@{/}">Continue Shopping</a>
     </div>
 </main>
 

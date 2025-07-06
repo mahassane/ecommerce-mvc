@@ -79,7 +79,7 @@
 
 <div class="login-container">
     <h2>Login</h2>
-    <form method="POST" th:action="@{/ecommerce/login}" th:object="${user}">
+    <form method="POST" th:action="@{/login}" th:object="${user}">
         <input type="text" name="email" th:field="*{email}" placeholder="Email" required>
         <br><br>
         <input type="password" name="password" th:field="*{password}" placeholder="Password" required>
@@ -88,7 +88,7 @@
     </form>
 
     <div class="signup-link">
-        <a th:href="@{/ecommerce/signup}">Don't have an account? Sign up</a>
+        <a th:href="@{/signup}">Don't have an account? Sign up</a>
     </div>
 
     <!-- Hidden alert -->

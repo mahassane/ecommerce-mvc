@@ -27,7 +27,7 @@
         </ul>
 
         <!-- Logout button -->
-        <form th:action="@{/ecommerce/logout}" method="GET" class="ms-3 mb-0">
+        <form th:action="@{/logout}" method="GET" class="ms-3 mb-0">
             <button type="submit" class="btn btn-outline-danger">Logout</button>
         </form>
     </div>
@@ -80,7 +80,7 @@
                     <td th:text="${user.getRole()}">USER</td>
                     <td th:text="${user.getJoinedAt()}">2025-07-01</td>
                     <td>
-                        <form th:action="@{/ecommerce/admin/removeUser(id=${user.userId})}" method="POST" th:if="${user.role != 'admin'}">
+                        <form th:action="@{/admin/removeUser(id=${user.userId})}" method="POST" th:if="${user.role != 'admin'}">
                             <input type="hidden" name="_method" value="delete" />
                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                         </form>
@@ -110,7 +110,7 @@
                     <td th:text="${product.getPname()}">Product Name</td>
                     <td>$<span th:text="${product.getPrice()}">0.00</span></td>
                     <td>
-                        <form th:action="@{/ecommerce/admin/removeProduct(id=${product.getPid()})}" method="POST" class="d-inline">
+                        <form th:action="@{/admin/removeProduct(id=${product.getPid()})}" method="POST" class="d-inline">
                             <input type="hidden" name="_method" value="delete" />
                             <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                         </form>
@@ -122,7 +122,7 @@
 
             <!-- Add Product Form -->
             <h4>Add New Product</h4>
-            <form th:action="@{/ecommerce/admin/addProduct}" method="post" th:object="${newProduct}">
+            <form th:action="@{/admin/addProduct}" method="post" th:object="${newProduct}">
                 <input type="hidden" />
 
                 <div class="mb-3">

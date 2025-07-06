@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/ecommerce")
 public class MyCommerceController {
 
     private UserService userService;
@@ -81,13 +80,13 @@ public class MyCommerceController {
             }
 
             if (theUser.getRole().equals("admin")) {
-                return "redirect:/ecommerce/admin";
+                return "redirect:/admin";
             } else {
-                return "redirect:/ecommerce";
+                return "redirect:/";
             }
         } else {
             redirectAttributes.addFlashAttribute("badCredentials", true);
-            return "redirect:/ecommerce/login";
+            return "redirect:/login";
         }
     }
 
@@ -111,7 +110,7 @@ public class MyCommerceController {
         if (loggedUser != null && "admin".equals(loggedUser.getRole())) {
             return "admin-page";
         }
-        return "redirect:/ecommerce/login";
+        return "redirect:/login";
     }
 
     @PostMapping("/admin/removeUser")
@@ -139,8 +138,8 @@ public class MyCommerceController {
                 // Delete user
                 userService.deleteUserById(id);
             }
-            return "redirect:/ecommerce/admin#users";
-        } else return "redirect:/ecommerce/login";
+            return "redirect:/admin#users";
+        } else return "redirect:/login";
     }
 
     @PostMapping("/admin/addProduct")
@@ -148,8 +147,8 @@ public class MyCommerceController {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser != null && "admin".equals(loggedUser.getRole())) {
             productService.save(product);
-            return "redirect:/ecommerce/admin#products";
-        } else return "redirect:/ecommerce/login";
+            return "redirect:/admin#products";
+        } else return "redirect:/login";
     }
 
     @PostMapping("/admin/removeProduct")
@@ -160,8 +159,8 @@ public class MyCommerceController {
                 orderItemService.deleteOrderItemsByProduct(id);
                 productService.deleteProduct(id);
             }
-            return "redirect:/ecommerce/admin#products";
-        } else return "redirect:/ecommerce/login";
+            return "redirect:/admin#products";
+        } else return "redirect:/login";
     }
 
     @GetMapping("/cart")
@@ -201,7 +200,7 @@ public class MyCommerceController {
                 for (CartItem cartItem : cart) {
                     if (cartItem.getProduct().getPid().equals(product.getPid())) {
                         cartItem.setQuantity(cartItem.getQuantity() + 1);
-                        return "redirect:/ecommerce";
+                        return "redirect:/";
                     }
                 }
                 CartItem cartItem = new CartItem(null, product, 1);
@@ -209,7 +208,7 @@ public class MyCommerceController {
                 cart.add(cartItem);
             }
         }
-        return "redirect:/ecommerce";
+        return "redirect:/";
     }
 
     @GetMapping("/checkout")
@@ -226,7 +225,7 @@ public class MyCommerceController {
             model.addAttribute("order", order);
             return "checkout";
         } else  {
-            return "redirect:/ecommerce/login";
+            return "redirect:/login";
         }
     }
 
@@ -251,7 +250,7 @@ public class MyCommerceController {
                 session.setAttribute("cart", cart);
             }
         }
-        return "redirect:/ecommerce/cart";
+        return "redirect:/cart";
     }
 
     @PostMapping("/cart/decrement")
@@ -279,7 +278,7 @@ public class MyCommerceController {
                 session.setAttribute("cart", cart);
             }
         }
-        return "redirect:/ecommerce/cart";
+        return "redirect:/cart";
     }
 
     @GetMapping("")
@@ -323,7 +322,7 @@ public class MyCommerceController {
             }
             cartItemService.clearCart(user);
             return "post-order";
-        } else return "redirect:/ecommerce/cart";
+        } else return "redirect:/cart";
     }
 
     @GetMapping("/orders")
@@ -340,14 +339,14 @@ public class MyCommerceController {
         Order orderToCancel = orderService.getOrderById(id);
         List<OrderItem> orderItems = orderItemService.getOrderItems(id);
 
-        if (orderToCancel == null || orderItems.isEmpty()) { return "redirect:/ecommerce/orders"; }
+        if (orderToCancel == null || orderItems.isEmpty()) { return "redirect:/orders"; }
 
         // Clear order items
         orderItemService.deleteOrderItems(orderToCancel.getOrderId());
 
         // Cancel order
         orderService.deleteOrderById(orderToCancel.getOrderId());
-        return "redirect:/ecommerce/orders";
+        return "redirect:/orders";
     }
 
     @GetMapping("/profile")
@@ -356,14 +355,14 @@ public class MyCommerceController {
         if (loggedUser != null && "Customer".equals(loggedUser.getRole())) {
             model.addAttribute("user", loggedUser);
             return "user-profile";
-        } else return "redirect:/ecommerce/login";
+        } else return "redirect:/login";
     }
 
     @PostMapping("/updateProfile")
     public String updateProfile(@RequestParam String firstName, @RequestParam String lastName, @RequestParam String email, @RequestParam String password, Model model, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null) {
-            return "redirect:/ecommerce/login";
+            return "redirect:/login";
         }
 
         User existing = userService.getUserByEmail(email);
@@ -385,7 +384,7 @@ public class MyCommerceController {
 
         session.setAttribute("loggedUser", loggedUser);
 
-        return "redirect:/ecommerce/profile";
+        return "redirect:/profile";
     }
 
 
@@ -408,15 +407,15 @@ public class MyCommerceController {
             if (userService.getUserByEmail(user.getEmail()) == null) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
                 userService.save(user);
-                return "redirect:/ecommerce/login";
+                return "redirect:/login";
             } else {
                 redirectAttributes.addFlashAttribute("inValidEmail", "Email address already in use.");
-                return  "redirect:/ecommerce/signup";
+                return  "redirect:/signup";
             }
         }
         else {
             redirectAttributes.addFlashAttribute("inValidEmail", "Invalid Email.");
-            return "redirect:/ecommerce/signup";
+            return "redirect:/signup";
         }
     }
 
@@ -424,6 +423,6 @@ public class MyCommerceController {
     public String logout(HttpSession session) {
 //        session.removeAttribute("loggedUser");
         session.invalidate();
-        return "redirect:/ecommerce";
+        return "redirect:/";
     }
 }
